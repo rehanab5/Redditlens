@@ -20,8 +20,7 @@ import {
   LogOut, 
   MessageSquareText, 
   Settings, 
-  TrendingUp, 
-  User
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -55,9 +54,9 @@ export function AppSidebar() {
 
   const settingsItems = [
     {
-      title: "Account",
+      title: "Settings",
       url: "/settings",
-      icon: User,
+      icon: Settings,
     },
   ];
 
@@ -69,7 +68,7 @@ export function AppSidebar() {
           <span className="font-bold text-lg">RedditInsight</span>
         </div>
       </SidebarHeader>
-      <SidebarContent className="space-y-4">
+      <SidebarContent className="space-y-2">
         <SidebarGroup>
           <SidebarGroupLabel>Analytics</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -80,7 +79,7 @@ export function AppSidebar() {
                     isActive={location.pathname === item.url}
                     onClick={() => navigate(item.url)}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -98,7 +97,7 @@ export function AppSidebar() {
                     isActive={location.pathname === item.url}
                     onClick={() => navigate(item.url)}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -113,7 +112,7 @@ export function AppSidebar() {
           onClick={logout} 
           className="w-full justify-start text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent"
         >
-          <LogOut className="mr-2 h-5 w-5" />
+          <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>
       </SidebarFooter>

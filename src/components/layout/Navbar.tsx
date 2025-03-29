@@ -1,12 +1,6 @@
 
 import { useState } from "react";
-import {
-  Bell,
-  Download,
-  Menu,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { Bell, Download, Menu, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -33,23 +27,23 @@ export function Navbar() {
   };
   
   return (
-    <div className="border-b bg-card">
-      <div className="flex h-16 items-center px-4 justify-between">
+    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-14 items-center px-4 justify-between">
         <div className="flex items-center">
           <SidebarTrigger>
-            <Button variant="outline" size="icon" className="mr-2 md:hidden">
+            <Button variant="ghost" size="icon" className="mr-2 md:hidden">
               <Menu className="h-5 w-5" />
             </Button>
           </SidebarTrigger>
-          <h1 className="text-xl font-bold md:text-2xl">RedditInsight</h1>
+          <h1 className="text-xl font-semibold md:text-xl">RedditInsight</h1>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={exportData}>
+          <Button variant="ghost" size="icon" onClick={exportData} title="Export Data">
             <Download className="h-5 w-5" />
           </Button>
           
-          <Button variant="outline" size="icon" onClick={toggleTheme}>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} title="Toggle Theme">
             {theme === "light" ? (
               <Moon className="h-5 w-5" />
             ) : (
@@ -59,9 +53,9 @@ export function Navbar() {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary"></span>
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary"></span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

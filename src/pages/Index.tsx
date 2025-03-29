@@ -16,6 +16,7 @@ const Index = () => {
     }
   }, [navigate, isAuthenticated]);
 
+  // This component doesn't render anything, it just redirects
   return null;
 };
 

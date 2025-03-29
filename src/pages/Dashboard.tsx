@@ -3,22 +3,22 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { LineChart } from "@/components/charts/LineChart";
 import { BarChart } from "@/components/charts/BarChart";
-import { BotScoreCard } from "@/components/dashboard/BotScoreCard";
-import { SentimentCard } from "@/components/dashboard/SentimentCard";
 import { Bot, MessageSquare, TrendingUp, Users } from "lucide-react";
 import { mockDashboardStats, mockInfluencerScore, mockSubredditActivity, mockTrendData } from "@/services/mockData";
+import { BotScoreCard } from "@/components/dashboard/BotScoreCard";
+import { SentimentCard } from "@/components/dashboard/SentimentCard";
 
 export default function Dashboard() {
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Dashboard Overview</h1>
         
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <StatsCard
-            title="Bot Detection Score"
+            title="Bot Detection"
             value="65%"
-            description="Average bot probability"
+            description="Average detection score"
             icon={Bot}
             trend={12}
             iconColor="text-purple-500"
@@ -26,15 +26,15 @@ export default function Dashboard() {
           <StatsCard
             title="Sentiment Analysis"
             value="+0.35"
-            description="Overall sentiment score"
+            description="Overall sentiment"
             icon={MessageSquare}
             trend={-5}
             iconColor="text-blue-500"
           />
           <StatsCard
-            title="Trend Growth"
+            title="Trend Forecasting"
             value="+23%"
-            description="Predicted activity increase"
+            description="Activity increase"
             icon={TrendingUp}
             trend={23}
             iconColor="text-green-500"
@@ -42,14 +42,14 @@ export default function Dashboard() {
           <StatsCard
             title="User Analysis"
             value="42"
-            description="Users analyzed this month"
+            description="Users analyzed"
             icon={Users}
             trend={8}
             iconColor="text-orange-500"
           />
         </div>
         
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <LineChart
             title="Trend Forecast"
             data={mockTrendData}
@@ -70,7 +70,7 @@ export default function Dashboard() {
           />
         </div>
         
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <BotScoreCard
             username={mockInfluencerScore.username}
             score={mockInfluencerScore.score}
