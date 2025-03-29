@@ -77,7 +77,7 @@ export function AppSidebar() {
               {analyticsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
-                    active={location.pathname === item.url}
+                    isActive={location.pathname === item.url}
                     onClick={() => navigate(item.url)}
                   >
                     <item.icon className="h-5 w-5" />
@@ -95,7 +95,7 @@ export function AppSidebar() {
               {settingsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    active={location.pathname === item.url}
+                    isActive={location.pathname === item.url}
                     onClick={() => navigate(item.url)}
                   >
                     <item.icon className="h-5 w-5" />
