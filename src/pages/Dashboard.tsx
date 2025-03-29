@@ -1,14 +1,65 @@
 
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { LineChart } from "@/components/charts/LineChart";
 import { BarChart } from "@/components/charts/BarChart";
 import { Bot, MessageSquare, TrendingUp, Users } from "lucide-react";
-import { mockDashboardStats, mockInfluencerScore, mockSubredditActivity, mockTrendData } from "@/services/mockData";
 import { BotScoreCard } from "@/components/dashboard/BotScoreCard";
 import { SentimentCard } from "@/components/dashboard/SentimentCard";
+import { RedditInsightAPI } from "@/backend/api";
+import { BotScore } from "@/backend/models/botDetection";
+import { InfluencerScore } from "@/backend/models/influencerDetection";
+import { SentimentResult } from "@/backend/models/sentimentAnalysis";
+import { TrendData, ActivityData } from "@/backend/models/trendForecasting";
+import { toast } from "sonner";
 
 export default function Dashboard() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [botScore, setBotScore] = useState<BotScore | null>(null);
+  const [influencerScore, setInfluencerScore] = useState<InfluencerScore | null>(null);
+  const [sentimentResults, setSentimentResults] = useState<SentimentResult[] | null>(null);
+  const [trendData, setTrendData] = useState<TrendData[] | null>(null);
+  const [activityData, setActivityData] = useState<ActivityData[] | null>(null);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        // Default subreddit to analyze
+        const defaultSubreddit = "all";
+        
+        // Load all data in parallel
+        const [
+          botData,
+          influencerData,
+          sentimentData,
+          trendData,
+          activityData
+        ] = await Promise.all([
+          RedditInsightAPI.analyzeBotUser("AutoModerator"),
+          RedditInsightAPI.analyzeInfluencer("GallowBoob"),
+          RedditInsightAPI.analyzeSubredditSentiment(defaultSubreddit),
+          RedditInsightAPI.getTrendData(defaultSubreddit),
+          RedditInsightAPI.getActivityData(defaultSubreddit)
+        ]);
+        
+        setBotScore(botData);
+        setInfluencerScore(influencerData);
+        setSentimentResults(sentimentData);
+        setTrendData(trendData);
+        setActivityData(activityData);
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        toast.error("Error loading some dashboard data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadDashboardData();
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -17,75 +68,87 @@ export default function Dashboard() {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             title="Bot Detection"
-            value="65%"
+            value={botScore ? `${botScore.score}%` : "Loading..."}
             description="Average detection score"
             icon={Bot}
             trend={12}
             iconColor="text-purple-500"
+            isLoading={isLoading}
           />
           <StatsCard
             title="Sentiment Analysis"
-            value="+0.35"
+            value={sentimentResults ? 
+              `${sentimentResults.reduce((sum, item) => sum + item.sentimentScore, 0) / sentimentResults.length > 0 ? "+" : ""}${(sentimentResults.reduce((sum, item) => sum + item.sentimentScore, 0) / sentimentResults.length).toFixed(2)}` 
+              : "Loading..."}
             description="Overall sentiment"
             icon={MessageSquare}
             trend={-5}
             iconColor="text-blue-500"
+            isLoading={isLoading}
           />
           <StatsCard
             title="Trend Forecasting"
-            value="+23%"
+            value={trendData && trendData.length > 0 ? 
+              `+${Math.round((trendData[trendData.length - 1].predictedValue || 0) / (trendData[trendData.length - 5].value || 1) * 100 - 100)}%` 
+              : "Loading..."}
             description="Activity increase"
             icon={TrendingUp}
             trend={23}
             iconColor="text-green-500"
+            isLoading={isLoading}
           />
           <StatsCard
             title="User Analysis"
-            value="42"
+            value={activityData ? `${activityData.length}` : "Loading..."}
             description="Users analyzed"
             icon={Users}
             trend={8}
             iconColor="text-orange-500"
+            isLoading={isLoading}
           />
         </div>
         
         <div className="grid gap-4 md:grid-cols-2">
-          <LineChart
-            title="Trend Forecast"
-            data={mockTrendData}
-            xDataKey="date"
-            series={[
-              { dataKey: "value", name: "Actual", color: "#8884d8" },
-              { dataKey: "predictedValue", name: "Predicted", color: "#82ca9d" }
-            ]}
-          />
-          <BarChart
-            title="Subreddit Activity"
-            data={mockSubredditActivity}
-            xDataKey="date"
-            series={[
-              { dataKey: "posts", name: "Posts", color: "#8884d8" },
-              { dataKey: "comments", name: "Comments", color: "#82ca9d" }
-            ]}
-          />
+          {trendData && (
+            <LineChart
+              title="Trend Forecast"
+              data={trendData}
+              xDataKey="date"
+              series={[
+                { dataKey: "value", name: "Actual", color: "#8884d8" },
+                { dataKey: "predictedValue", name: "Predicted", color: "#82ca9d" }
+              ]}
+            />
+          )}
+          
+          {activityData && (
+            <BarChart
+              title="Subreddit Activity"
+              data={activityData}
+              xDataKey="date"
+              series={[
+                { dataKey: "posts", name: "Posts", color: "#8884d8" },
+                { dataKey: "comments", name: "Comments", color: "#82ca9d" }
+              ]}
+            />
+          )}
         </div>
         
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <BotScoreCard
-            username={mockInfluencerScore.username}
-            score={mockInfluencerScore.score}
-            details={mockInfluencerScore.details}
-          />
-          {[...Array(3)].map((_, index) => (
+          {botScore && (
+            <BotScoreCard
+              username={botScore.username}
+              score={botScore.score}
+              details={botScore.details}
+            />
+          )}
+          
+          {sentimentResults && sentimentResults.slice(0, 3).map((result, index) => (
             <SentimentCard
               key={index}
-              title={`Top Post ${index + 1}`}
-              sentimentScore={[0.75, -0.4, 0.2][index]}
-              details={{
-                positive: [0.8, 0.2, 0.4][index],
-                negative: [0.1, 0.6, 0.2][index],
-                neutral: [0.1, 0.2, 0.4][index],
-              }}
+              title={result.title}
+              sentimentScore={result.sentimentScore}
+              details={result.details}
             />
           ))}
         </div>

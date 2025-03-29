@@ -4,41 +4,33 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AnalysisForm } from "@/components/dashboard/AnalysisForm";
 import { LineChart } from "@/components/charts/LineChart";
 import { BarChart } from "@/components/charts/BarChart";
-import { StatsCard } from "@/components/dashboard/StatsCard";
-import { mockSubredditActivity, mockTrendData } from "@/services/mockData";
+import { RedditInsightAPI } from "@/backend/api";
+import { TrendData, ActivityData } from "@/backend/models/trendForecasting";
 import { toast } from "sonner";
-import { ArrowUpRight, Download, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Download } from "lucide-react";
 
 export default function TrendForecasting() {
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<{
-    trendData: typeof mockTrendData;
-    activityData: typeof mockSubredditActivity;
-    subreddit: string;
-    growthRate: number;
-    peakTime: string;
-    prediction: string;
-  } | null>(null);
+  const [trendData, setTrendData] = useState<TrendData[] | null>(null);
+  const [activityData, setActivityData] = useState<ActivityData[] | null>(null);
+  const [subredditName, setSubredditName] = useState("");
 
   const analyzeTrends = async (subreddit: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get data from the backend API
+      const [trendResults, activityResults] = await Promise.all([
+        RedditInsightAPI.getTrendData(subreddit),
+        RedditInsightAPI.getActivityData(subreddit)
+      ]);
       
-      setResults({
-        trendData: mockTrendData,
-        activityData: mockSubredditActivity,
-        subreddit,
-        growthRate: 23.5,
-        peakTime: "Weekends, 6-8 PM EST",
-        prediction: "Continued growth expected with seasonal fluctuations. Peak activity predicted in March 2024."
-      });
-      
+      setTrendData(trendResults);
+      setActivityData(activityResults);
+      setSubredditName(subreddit);
       toast.success(`Trend analysis complete for r/${subreddit}`);
     } catch (error) {
+      console.error("Error analyzing trends:", error);
       toast.error("Error analyzing trends");
     } finally {
       setIsLoading(false);
@@ -46,12 +38,12 @@ export default function TrendForecasting() {
   };
 
   const exportData = () => {
-    if (!results) return;
+    if (!trendData) return;
     
-    // Create CSV content
+    // Create CSV content for trend data
     const headers = "Date,Actual Value,Predicted Value\n";
-    const rows = results.trendData.map(point => 
-      `${point.date},${point.value || ""},${point.predictedValue || ""}`
+    const rows = trendData.map(item => 
+      `${item.date},${item.value || ""},${item.predictedValue || ""}`
     ).join("\n");
     
     const csv = headers + rows;
@@ -61,7 +53,7 @@ export default function TrendForecasting() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `trends_${results.subreddit}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `trends_${subredditName}_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -75,72 +67,50 @@ export default function TrendForecasting() {
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">Trend Forecasting</h1>
         <p className="text-muted-foreground">
-          Predict future activity and trends for subreddits using historical data.
+          Analyze activity trends in a subreddit and predict future growth patterns.
         </p>
 
         <AnalysisForm
-          title="Forecast Subreddit Trends"
+          title="Analyze Subreddit Trends"
           placeholder="Enter a subreddit name (without r/)"
           buttonText="Analyze Trends"
           onSubmit={analyzeTrends}
           isLoading={isLoading}
-          description="Predict future activity patterns for a subreddit"
+          description="Track historical data and predict future activity"
         />
         
-        {results && (
-          <div className="mt-6 space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Trend Analysis for r/{results.subreddit}</h2>
+        {trendData && trendData.length > 0 && (
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Trend Analysis Results for r/{subredditName}</h2>
               <Button onClick={exportData} variant="outline" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
                 Export Data
               </Button>
             </div>
             
-            <div className="grid gap-4 md:grid-cols-3">
-              <StatsCard
-                title="Growth Rate"
-                value={`+${results.growthRate}%`}
-                description="Projected annual growth"
-                icon={TrendingUp}
-                iconColor="text-green-500"
-              />
-              <StatsCard
-                title="Peak Activity Time"
-                value={results.peakTime}
-                description="Highest engagement periods"
-                icon={ArrowUpRight}
-                iconColor="text-blue-500"
-              />
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium">Prediction</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm">{results.prediction}</p>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-2">
               <LineChart
-                title="Activity Trend & Forecast"
-                data={results.trendData}
+                title="Activity Trend Forecast"
+                data={trendData}
                 xDataKey="date"
                 series={[
                   { dataKey: "value", name: "Historical", color: "#8884d8" },
                   { dataKey: "predictedValue", name: "Forecast", color: "#82ca9d" }
                 ]}
               />
-              <BarChart
-                title="Subreddit Activity"
-                data={results.activityData}
-                xDataKey="date"
-                series={[
-                  { dataKey: "posts", name: "Posts", color: "#8884d8" },
-                  { dataKey: "comments", name: "Comments", color: "#82ca9d" }
-                ]}
-              />
+              
+              {activityData && activityData.length > 0 && (
+                <BarChart
+                  title="Historical Engagement"
+                  data={activityData}
+                  xDataKey="date"
+                  series={[
+                    { dataKey: "posts", name: "Posts", color: "#8884d8" },
+                    { dataKey: "comments", name: "Comments", color: "#82ca9d" }
+                  ]}
+                />
+              )}
             </div>
           </div>
         )}

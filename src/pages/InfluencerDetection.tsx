@@ -2,79 +2,41 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AnalysisForm } from "@/components/dashboard/AnalysisForm";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfluencerCard } from "@/components/dashboard/InfluencerCard";
+import { RedditInsightAPI } from "@/backend/api";
+import { Influencer } from "@/backend/models/influencerDetection";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Download, User } from "lucide-react";
-import { InfluencerCard } from "@/components/dashboard/InfluencerCard";
-
-// Mock data for influencer analysis
-const mockInfluencers = [
-  {
-    username: "tech_innovator",
-    score: 87,
-    followers: 125000,
-    engagement: 4.2,
-    topics: ["technology", "AI", "coding"],
-    sentiment: 0.76,
-    botProbability: 0.12,
-  },
-  {
-    username: "data_scientist_pro",
-    score: 92,
-    followers: 78500,
-    engagement: 6.8,
-    topics: ["data science", "machine learning", "statistics"],
-    sentiment: 0.82,
-    botProbability: 0.08,
-  },
-  {
-    username: "reddit_mod_official",
-    score: 76,
-    followers: 45200,
-    engagement: 3.5,
-    topics: ["community", "moderation", "reddit culture"],
-    sentiment: 0.58,
-    botProbability: 0.22,
-  },
-  {
-    username: "digital_marketer",
-    score: 81,
-    followers: 62800,
-    engagement: 5.1,
-    topics: ["marketing", "SEO", "social media"],
-    sentiment: 0.68,
-    botProbability: 0.15,
-  }
-];
+import { Download } from "lucide-react";
 
 export default function InfluencerDetection() {
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<typeof mockInfluencers | null>(null);
+  const [influencers, setInfluencers] = useState<Influencer[] | null>(null);
   const [subredditName, setSubredditName] = useState("");
 
-  const analyzeInfluencers = async (subreddit: string) => {
+  const detectInfluencers = async (subreddit: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call to backend model
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setResults(mockInfluencers);
+      // Get data from the backend API
+      const results = await RedditInsightAPI.getSubredditInfluencers(subreddit);
+      setInfluencers(results);
       setSubredditName(subreddit);
-      toast.success(`Influencer analysis complete for r/${subreddit}`);
+      toast.success(`Found ${results.length} influencers in r/${subreddit}`);
     } catch (error) {
-      toast.error("Error analyzing influencers");
+      console.error("Error detecting influencers:", error);
+      toast.error("Error detecting influencers");
     } finally {
       setIsLoading(false);
     }
   };
 
   const exportData = () => {
-    if (!results) return;
+    if (!influencers) return;
     
     // Create CSV content
-    const headers = "Username,Influence Score,Followers,Engagement Rate,Bot Probability,Sentiment Score,Topics\n";
-    const rows = results.map(influencer => 
-      `${influencer.username},${influencer.score},${influencer.followers},${influencer.engagement},${influencer.botProbability},${influencer.sentiment},"${influencer.topics.join(', ')}"`
+    const headers = "Username,Score,Followers,Engagement(%),Topics,Sentiment,Bot Probability\n";
+    const rows = influencers.map(inf => 
+      `${inf.username},${inf.score},${inf.followers},${inf.engagement},"${inf.topics.join(', ')}",${inf.sentiment},${inf.botProbability}`
     ).join("\n");
     
     const csv = headers + rows;
@@ -98,19 +60,19 @@ export default function InfluencerDetection() {
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">Influencer Detection</h1>
         <p className="text-muted-foreground">
-          Identify influential Reddit users within a subreddit based on engagement, sentiment and community impact.
+          Identify influential users in a subreddit based on engagement, follower count, and content impact.
         </p>
 
         <AnalysisForm
           title="Find Subreddit Influencers"
           placeholder="Enter a subreddit name (without r/)"
-          buttonText="Analyze Influencers"
-          onSubmit={analyzeInfluencers}
+          buttonText="Detect Influencers"
+          onSubmit={detectInfluencers}
           isLoading={isLoading}
-          description="Discover key users who shape the conversation in a subreddit"
+          description="Discover the most influential users in a community"
         />
         
-        {results && results.length > 0 && (
+        {influencers && influencers.length > 0 && (
           <div className="mt-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Influencers in r/{subredditName}</h2>
@@ -120,18 +82,9 @@ export default function InfluencerDetection() {
               </Button>
             </div>
             
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {results.map((influencer, index) => (
-                <InfluencerCard
-                  key={index}
-                  username={influencer.username}
-                  score={influencer.score}
-                  followers={influencer.followers}
-                  engagement={influencer.engagement}
-                  topics={influencer.topics}
-                  sentiment={influencer.sentiment}
-                  botProbability={influencer.botProbability}
-                />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {influencers.map((influencer, index) => (
+                <InfluencerCard key={index} {...influencer} />
               ))}
             </div>
           </div>

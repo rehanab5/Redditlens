@@ -3,25 +3,27 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AnalysisForm } from "@/components/dashboard/AnalysisForm";
 import { SentimentCard } from "@/components/dashboard/SentimentCard";
-import { mockSentimentAnalysis } from "@/services/mockData";
+import { RedditInsightAPI } from "@/backend/api";
+import { SentimentResult } from "@/backend/models/sentimentAnalysis";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 
 export default function SentimentAnalysis() {
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<typeof mockSentimentAnalysis | null>(null);
+  const [results, setResults] = useState<SentimentResult[] | null>(null);
   const [subredditName, setSubredditName] = useState("");
 
   const analyzeSentiment = async (subreddit: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setResults(mockSentimentAnalysis);
+      // Get data from the backend API
+      const data = await RedditInsightAPI.analyzeSubredditSentiment(subreddit);
+      setResults(data);
       setSubredditName(subreddit);
       toast.success(`Sentiment analysis complete for r/${subreddit}`);
     } catch (error) {
+      console.error("Error analyzing sentiment:", error);
       toast.error("Error analyzing sentiment");
     } finally {
       setIsLoading(false);
