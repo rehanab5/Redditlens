@@ -11,6 +11,7 @@ interface StatsCardProps {
   trend?: number;
   className?: string;
   iconColor?: string;
+  isLoading?: boolean;
 }
 
 export function StatsCard({
@@ -21,6 +22,7 @@ export function StatsCard({
   trend,
   className,
   iconColor = "text-primary",
+  isLoading = false,
 }: StatsCardProps) {
   return (
     <Card className={cn("overflow-hidden", className)}>
@@ -31,11 +33,23 @@ export function StatsCard({
         )}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold">
+          {isLoading ? (
+            <div className="h-8 w-24 animate-pulse rounded bg-muted"></div>
+          ) : (
+            value
+          )}
+        </div>
         {description && (
-          <CardDescription className="mt-1">{description}</CardDescription>
+          <CardDescription className="mt-1">
+            {isLoading ? (
+              <div className="h-4 w-32 animate-pulse rounded bg-muted"></div>
+            ) : (
+              description
+            )}
+          </CardDescription>
         )}
-        {typeof trend === "number" && (
+        {typeof trend === "number" && !isLoading && (
           <p
             className={cn(
               "mt-2 flex items-center text-xs",
@@ -44,6 +58,9 @@ export function StatsCard({
           >
             {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
           </p>
+        )}
+        {typeof trend === "number" && isLoading && (
+          <div className="mt-2 h-4 w-16 animate-pulse rounded bg-muted"></div>
         )}
       </CardContent>
     </Card>
