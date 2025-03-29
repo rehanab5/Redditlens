@@ -1,4 +1,3 @@
-
 // This file contains mock data for the application
 // In a real application, this would be replaced with actual API calls
 
@@ -73,6 +72,46 @@ export const mockInfluencerScore = {
     { criteriaName: "Interaction Ratio", score: 4.5, maxScore: 5 },
   ],
 };
+
+// Mock influencer data for demonstration
+export const mockInfluencers = [
+  {
+    username: "tech_innovator",
+    score: 87,
+    followers: 125000,
+    engagement: 4.2,
+    topics: ["technology", "AI", "coding"],
+    sentiment: 0.76,
+    botProbability: 0.12,
+  },
+  {
+    username: "data_scientist_pro",
+    score: 92,
+    followers: 78500,
+    engagement: 6.8,
+    topics: ["data science", "machine learning", "statistics"],
+    sentiment: 0.82,
+    botProbability: 0.08,
+  },
+  {
+    username: "reddit_mod_official",
+    score: 76,
+    followers: 45200,
+    engagement: 3.5,
+    topics: ["community", "moderation", "reddit culture"],
+    sentiment: 0.58,
+    botProbability: 0.22,
+  },
+  {
+    username: "digital_marketer",
+    score: 81,
+    followers: 62800,
+    engagement: 5.1,
+    topics: ["marketing", "SEO", "social media"],
+    sentiment: 0.68,
+    botProbability: 0.15,
+  }
+];
 
 // Sentiment analysis data
 export const mockSentimentAnalysis = [

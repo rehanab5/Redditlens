@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import BotDetection from "./pages/BotDetection";
+import InfluencerDetection from "./pages/InfluencerDetection";
 import SentimentAnalysis from "./pages/SentimentAnalysis";
 import TrendForecasting from "./pages/TrendForecasting";
 import Settings from "./pages/Settings";
@@ -44,6 +45,11 @@ const App = () => (
             <Route path="/bot-detection" element={
               <ProtectedRoute>
                 <BotDetection />
+              </ProtectedRoute>
+            } />
+            <Route path="/influencer-detection" element={
+              <ProtectedRoute>
+                <InfluencerDetection />
               </ProtectedRoute>
             } />
             <Route path="/sentiment-analysis" element={

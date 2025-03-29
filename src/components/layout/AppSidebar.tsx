@@ -20,7 +20,8 @@ import {
   LogOut, 
   MessageSquareText, 
   Settings, 
-  TrendingUp
+  TrendingUp,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -39,6 +40,11 @@ export function AppSidebar() {
       title: "Bot Detection",
       url: "/bot-detection",
       icon: Bot,
+    },
+    {
+      title: "Influencer Detection",
+      url: "/influencer-detection",
+      icon: Users,
     },
     {
       title: "Sentiment Analysis",
