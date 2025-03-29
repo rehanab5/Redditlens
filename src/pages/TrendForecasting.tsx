@@ -5,7 +5,7 @@ import { AnalysisForm } from "@/components/dashboard/AnalysisForm";
 import { LineChart } from "@/components/charts/LineChart";
 import { BarChart } from "@/components/charts/BarChart";
 import { RedditInsightAPI } from "@/backend/api";
-import { TrendData, ActivityData } from "@/backend/models/trendForecasting";
+import { TrendData, ActivityData } from "@/types/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";

@@ -35,7 +35,7 @@ export function Navbar() {
               <Menu className="h-5 w-5" />
             </Button>
           </SidebarTrigger>
-          <h1 className="text-xl font-semibold md:text-xl">RedditInsight</h1>
+          <h1 className="text-xl font-semibold md:text-xl">TrendLens</h1>
         </div>
         
         <div className="flex items-center gap-2">

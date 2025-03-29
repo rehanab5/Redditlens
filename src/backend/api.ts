@@ -1,43 +1,91 @@
 
-import { BotDetectionModel, BotScore } from './models/botDetection';
-import { 
-  InfluencerDetectionModel, 
-  Influencer, 
-  InfluencerScore 
-} from './models/influencerDetection';
-import { SentimentAnalysisModel, SentimentResult } from './models/sentimentAnalysis';
-import { 
-  TrendForecastingModel, 
-  TrendData, 
-  ActivityData 
-} from './models/trendForecasting';
-
 /**
- * Central API class to access all backend models
- * In a real application, this would connect to actual backend APIs
+ * Central API class to access all backend models via Flask API
  */
 export class RedditInsightAPI {
+  private static readonly API_BASE_URL = 'http://localhost:5000/api';
+
   // Bot Detection API
-  public static async analyzeBotUser(username: string): Promise<BotScore> {
-    return BotDetectionModel.analyzeUser(username);
+  public static async analyzeBotUser(username: string) {
+    const response = await fetch(`${this.API_BASE_URL}/bot/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
   }
   
-  public static async getSubredditBots(subreddit: string): Promise<BotScore[]> {
-    return BotDetectionModel.getSubredditBots(subreddit);
+  public static async getSubredditBots(subreddit: string) {
+    const response = await fetch(`${this.API_BASE_URL}/bot/subreddit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ subreddit }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
   }
   
   // Influencer Detection API
-  public static async analyzeInfluencer(username: string): Promise<InfluencerScore> {
-    return InfluencerDetectionModel.analyzeUser(username);
+  public static async analyzeInfluencer(username: string) {
+    const response = await fetch(`${this.API_BASE_URL}/influencer/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
   }
   
-  public static async getSubredditInfluencers(subreddit: string): Promise<Influencer[]> {
-    return InfluencerDetectionModel.getSubredditInfluencers(subreddit);
+  public static async getSubredditInfluencers(subreddit: string) {
+    const response = await fetch(`${this.API_BASE_URL}/influencer/subreddit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ subreddit }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
   }
   
   // Sentiment Analysis API
-  public static async analyzeSubredditSentiment(subreddit: string): Promise<SentimentResult[]> {
-    return SentimentAnalysisModel.analyzeSubreddit(subreddit);
+  public static async analyzeSubredditSentiment(subreddit: string) {
+    const response = await fetch(`${this.API_BASE_URL}/sentiment/subreddit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ subreddit }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
   }
   
   // Trend Forecasting API
@@ -45,11 +93,42 @@ export class RedditInsightAPI {
     subreddit: string, 
     historyMonths?: number, 
     forecastMonths?: number
-  ): Promise<TrendData[]> {
-    return TrendForecastingModel.getTrendData(subreddit, historyMonths, forecastMonths);
+  ) {
+    const response = await fetch(`${this.API_BASE_URL}/trend/data`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        subreddit,
+        historyMonths,
+        forecastMonths
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
   }
   
-  public static async getActivityData(subreddit: string, months?: number): Promise<ActivityData[]> {
-    return TrendForecastingModel.getActivityData(subreddit, months);
+  public static async getActivityData(subreddit: string, months?: number) {
+    const response = await fetch(`${this.API_BASE_URL}/trend/activity`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        subreddit,
+        months 
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    
+    return await response.json();
   }
 }

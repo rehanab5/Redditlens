@@ -71,7 +71,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-2 text-sidebar-foreground px-2">
           <BarChart3 className="h-6 w-6" />
-          <span className="font-bold text-lg">RedditInsight</span>
+          <span className="font-bold text-lg">TrendLens</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="space-y-2">
