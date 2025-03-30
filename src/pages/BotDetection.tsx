@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AnalysisForm } from "@/components/dashboard/AnalysisForm";
 import { BotScoreCard } from "@/components/dashboard/BotScoreCard";
 import { RedditInsightAPI } from "@/backend/api";
-import { BotScore } from "@/backend/models/botDetection";
+import { BotScore } from "@/types/api";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";

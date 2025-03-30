@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AnalysisForm } from "@/components/dashboard/AnalysisForm";
 import { InfluencerCard } from "@/components/dashboard/InfluencerCard";
 import { RedditInsightAPI } from "@/backend/api";
-import { Influencer } from "@/backend/models/influencerDetection";
+import { Influencer } from "@/types/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";

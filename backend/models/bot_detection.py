@@ -2,18 +2,6 @@
 import random
 import time
 
-class BotScore:
-    def __init__(self, username, score, details):
-        self.username = username
-        self.score = score
-        self.details = details
-
-class BotScoreCriteria:
-    def __init__(self, criteria_name, score, max_score):
-        self.criteria_name = criteria_name
-        self.score = score
-        self.max_score = max_score
-
 class BotDetectionModel:
     """
     Model for detecting bot accounts on Reddit

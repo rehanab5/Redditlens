@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -8,10 +7,7 @@ import { Bot, MessageSquare, TrendingUp, Users } from "lucide-react";
 import { BotScoreCard } from "@/components/dashboard/BotScoreCard";
 import { SentimentCard } from "@/components/dashboard/SentimentCard";
 import { RedditInsightAPI } from "@/backend/api";
-import { BotScore } from "@/backend/models/botDetection";
-import { InfluencerScore } from "@/backend/models/influencerDetection";
-import { SentimentResult } from "@/backend/models/sentimentAnalysis";
-import { TrendData, ActivityData } from "@/backend/models/trendForecasting";
+import { BotScore, InfluencerScore, SentimentResult, TrendData, ActivityData } from "@/types/api";
 import { toast } from "sonner";
 
 export default function Dashboard() {
