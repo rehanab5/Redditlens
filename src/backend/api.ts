@@ -1,4 +1,3 @@
-
 /**
  * Central API class to access all backend models via Flask API
  */
@@ -16,13 +15,16 @@ export class RedditInsightAPI {
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
+      const errorText = await response.text();
+      console.error(`HTTP error ${response.status}: ${errorText}`);
+      throw new Error(`HTTP error ${response.status}: ${errorText}`);
     }
     
     return await response.json();
   }
   
   public static async getSubredditBots(subreddit: string) {
+    console.log(`Requesting bots for subreddit: ${subreddit}`);
     const response = await fetch(`${this.API_BASE_URL}/bot/subreddit`, {
       method: 'POST',
       headers: {
@@ -32,7 +34,9 @@ export class RedditInsightAPI {
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
+      const errorText = await response.text();
+      console.error(`HTTP error ${response.status}: ${errorText}`);
+      throw new Error(`HTTP error ${response.status}: ${errorText}`);
     }
     
     return await response.json();
@@ -40,6 +44,7 @@ export class RedditInsightAPI {
   
   // Influencer Detection API
   public static async analyzeInfluencer(username: string) {
+    console.log(`Analyzing influencer: ${username}`);
     const response = await fetch(`${this.API_BASE_URL}/influencer/analyze`, {
       method: 'POST',
       headers: {
@@ -49,26 +54,38 @@ export class RedditInsightAPI {
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
+      const errorText = await response.text();
+      console.error(`HTTP error ${response.status}: ${errorText}`);
+      throw new Error(`HTTP error ${response.status}: ${errorText}`);
     }
     
     return await response.json();
   }
   
   public static async getSubredditInfluencers(subreddit: string) {
-    const response = await fetch(`${this.API_BASE_URL}/influencer/subreddit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ subreddit }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
+    console.log(`Requesting influencers for subreddit: ${subreddit}`);
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/influencer/subreddit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ subreddit }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`HTTP error ${response.status}: ${errorText}`);
+        throw new Error(`HTTP error ${response.status}: ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Received ${data.length} influencers for subreddit: ${subreddit}`);
+      return data;
+    } catch (error) {
+      console.error(`Error getting influencers for subreddit ${subreddit}:`, error);
+      throw error;
     }
-    
-    return await response.json();
   }
   
   // Sentiment Analysis API

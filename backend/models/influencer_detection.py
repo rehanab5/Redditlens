@@ -1,9 +1,9 @@
-
 import random
 import time
 import praw
 from textblob import TextBlob
 from collections import defaultdict
+import traceback
 
 class InfluencerDetectionModel:
     """
@@ -24,7 +24,8 @@ class InfluencerDetectionModel:
                 )
                 print("Reddit API initialized successfully")
             except Exception as e:
-                print(f"Error initializing Reddit API: {e}")
+                print(f"Error initializing Reddit API: {str(e)}")
+                traceback.print_exc()
                 # Fall back to mock data if Reddit API fails
                 cls._reddit = None
         return cls._reddit
@@ -32,14 +33,17 @@ class InfluencerDetectionModel:
     @staticmethod
     def fetch_top_posts(subreddit, limit=50):
         """Fetch top posts for a given subreddit"""
+        print(f"Fetching top posts from r/{subreddit}...")
         reddit = InfluencerDetectionModel._get_reddit_instance()
         if not reddit:
+            print("Reddit API not available, falling back to mock data")
             # Return mock data if Reddit API is not available
             return InfluencerDetectionModel._generate_mock_posts(subreddit, limit)
         
         try:
             subreddit_obj = reddit.subreddit(subreddit)
-            posts = subreddit_obj.top(limit=limit)
+            posts = list(subreddit_obj.top(limit=limit))
+            print(f"Successfully fetched {len(posts)} posts from r/{subreddit}")
             
             return [{
                 'id': post.id,
@@ -51,7 +55,8 @@ class InfluencerDetectionModel:
                 'awards': post.total_awards_received
             } for post in posts if post.author]
         except Exception as e:
-            print(f"Error fetching posts from r/{subreddit}: {e}")
+            print(f"Error fetching posts from r/{subreddit}: {str(e)}")
+            traceback.print_exc()
             # Fall back to mock data if fetching fails
             return InfluencerDetectionModel._generate_mock_posts(subreddit, limit)
     
@@ -86,7 +91,7 @@ class InfluencerDetectionModel:
             user = reddit.redditor(username)
             return user.link_karma, user.comment_karma
         except Exception as e:
-            print(f"Error fetching karma for user {username}: {e}")
+            print(f"Error fetching karma for user {username}: {str(e)}")
             return random.randint(1000, 50000), random.randint(1000, 50000)
     
     @staticmethod
@@ -138,7 +143,8 @@ class InfluencerDetectionModel:
             post.comments.replace_more(limit=0)
             return [comment.body for comment in post.comments[:limit]]
         except Exception as e:
-            print(f"Error fetching comments for post {post_id}: {e}")
+            print(f"Error fetching comments for post {post_id}: {str(e)}")
+            traceback.print_exc()
             return [f"Mock comment {i}" for i in range(limit)]
     
     @staticmethod
@@ -161,7 +167,7 @@ class InfluencerDetectionModel:
             total = sum(scores.values())
             return {k: round(v/total*100, 2) if total > 0 else 0 for k, v in scores.items()}
         except Exception as e:
-            print(f"Error analyzing sentiment: {e}")
+            print(f"Error analyzing sentiment: {str(e)}")
             # Fall back to mock sentiment data
             return {'positive': 50, 'neutral': 30, 'negative': 20}
     
@@ -219,6 +225,7 @@ class InfluencerDetectionModel:
             # Fetch top posts from the subreddit
             posts = InfluencerDetectionModel.fetch_top_posts(subreddit)
             if not posts:
+                print(f"No posts found in r/{subreddit}, returning mock data")
                 raise Exception("No posts found")
                 
             # Detect top influencers
@@ -272,10 +279,12 @@ class InfluencerDetectionModel:
                     "botProbability": bot_probability,
                 })
             
+            print(f"Successfully found {len(results)} influencers in r/{subreddit}")
             return results
             
         except Exception as e:
-            print(f"Error in get_subreddit_influencers: {e}")
+            print(f"Error in get_subreddit_influencers: {str(e)}")
+            traceback.print_exc()
             # Fall back to mock data
             count = random.randint(4, 6)
             results = []
@@ -304,4 +313,5 @@ class InfluencerDetectionModel:
                     "botProbability": round(random.random() * 0.3, 2),  # 0.0 to 0.3 bot probability
                 })
             
+            print(f"Generated {len(results)} mock influencers for r/{subreddit}")
             return results

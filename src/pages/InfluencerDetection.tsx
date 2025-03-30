@@ -7,23 +7,36 @@ import { RedditInsightAPI } from "@/backend/api";
 import { Influencer } from "@/types/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function InfluencerDetection() {
   const [isLoading, setIsLoading] = useState(false);
   const [influencers, setInfluencers] = useState<Influencer[] | null>(null);
   const [subredditName, setSubredditName] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const detectInfluencers = async (subreddit: string) => {
     setIsLoading(true);
+    setError(null);
     try {
+      console.log(`Requesting influencers for r/${subreddit}...`);
       // Get data from the backend API
       const results = await RedditInsightAPI.getSubredditInfluencers(subreddit);
+      console.log(`Received ${results.length} influencers for r/${subreddit}`);
+      
       setInfluencers(results);
       setSubredditName(subreddit);
-      toast.success(`Found ${results.length} influencers in r/${subreddit}`);
+      
+      if (results.length > 0) {
+        toast.success(`Found ${results.length} influencers in r/${subreddit}`);
+      } else {
+        setError("No influencers found in this subreddit. Please try another one.");
+        toast.warning("No influencers found. Try another subreddit.");
+      }
     } catch (error) {
       console.error("Error detecting influencers:", error);
+      setError("Error connecting to Reddit API. Please try again later.");
       toast.error("Error detecting influencers");
     } finally {
       setIsLoading(false);
@@ -71,6 +84,21 @@ export default function InfluencerDetection() {
           isLoading={isLoading}
           description="Discover the most influential users in a community"
         />
+        
+        {error && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {isLoading && (
+          <div className="flex justify-center items-center p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        )}
         
         {influencers && influencers.length > 0 && (
           <div className="mt-6">
