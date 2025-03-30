@@ -1,4 +1,3 @@
-
 import praw
 from textblob import TextBlob
 import time
@@ -10,25 +9,80 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 import nltk
+import ssl
+import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
-# Download necessary NLTK data (will only download if not already present)
-try:
-    nltk.data.find('vader_lexicon')
-except LookupError:
-    nltk.download('vader_lexicon')
+def ensure_nltk_resources():
+    """Download NLTK resources if not already available, handling SSL issues"""
+    nltk_resources = ['vader_lexicon', 'stopwords', 'wordnet']
+    
+    nltk_data_dir = os.path.expanduser('~/nltk_data')
+    os.makedirs(nltk_data_dir, exist_ok=True)
+    nltk.data.path.insert(0, nltk_data_dir)
+    
+    try:
+        _create_unverified_https_context = ssl._create_unverified_context
+    except AttributeError:
+        pass
+    else:
+        old_context = ssl._create_default_https_context
+        ssl._create_default_https_context = _create_unverified_https_context
+        print("Using unverified HTTPS context for NLTK downloads due to SSL certificate issues.")
+    
+    for resource in nltk_resources:
+        download_success = False
+        
+        try:
+            nltk.data.find(f"{resource}")
+            print(f"NLTK resource '{resource}' is already available.")
+            download_success = True
+        except LookupError:
+            print(f"NLTK resource '{resource}' not found. Attempting to download...")
+            try:
+                download_result = nltk.download(resource, download_dir=nltk_data_dir, quiet=False)
+                
+                if download_result:
+                    print(f"Successfully downloaded '{resource}'.")
+                    download_success = True
+                else:
+                    print(f"Failed to download '{resource}'. This may affect sentiment analysis accuracy.")
+            except Exception as e:
+                print(f"Error downloading '{resource}': {str(e)}")
+        
+        if download_success:
+            try:
+                if resource == 'vader_lexicon':
+                    nltk.data.load('sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt')
+                elif resource == 'stopwords':
+                    stopwords.words('english')
+                elif resource == 'wordnet':
+                    WordNetLemmatizer()
+                print(f"Verified '{resource}' is working correctly.")
+            except Exception as e:
+                print(f"Warning: '{resource}' was downloaded but cannot be loaded: {str(e)}")
+                download_success = False
+        
+        if not download_success:
+            print(f"\nManual download instructions for '{resource}':")
+            print("1. Run 'python -m nltk.downloader {}'".format(resource))
+            print("2. Or download from https://www.nltk.org/data.html")
+    
+    try:
+        if 'old_context' in locals():
+            ssl._create_default_https_context = old_context
+    except:
+        pass
 
-try:
-    nltk.data.find('stopwords')
-except LookupError:
-    nltk.download('stopwords')
+ensure_nltk_resources()
 
+_vader_analyzer = None
 try:
-    nltk.data.find('wordnet')
-except LookupError:
-    nltk.download('wordnet')
+    _vader_analyzer = SentimentIntensityAnalyzer()
+except:
+    print("Warning: VADER sentiment analyzer could not be initialized.")
 
 class SentimentAnalysisModel:
     """
@@ -39,7 +93,7 @@ class SentimentAnalysisModel:
     _reddit = None
     _vectorizer = None
     _ml_model = None
-    _sid = SentimentIntensityAnalyzer()
+    _sid = _vader_analyzer  # Using the global variable that might be None
     
     @classmethod
     def _get_reddit_instance(cls):
@@ -159,20 +213,39 @@ class SentimentAnalysisModel:
             except Exception as e:
                 print(f"ML sentiment prediction error: {e}")
         
-        # VADER sentiment analysis
-        vader_score = cls._sid.polarity_scores(cleaned_text)['compound']  # -1 to 1 scale
+        # VADER sentiment analysis (if available)
+        vader_score = 0
+        if cls._sid is not None:
+            try:
+                vader_score = cls._sid.polarity_scores(cleaned_text)['compound']  # -1 to 1 scale
+            except Exception as e:
+                print(f"VADER sentiment analysis error: {e}")
         
         # TextBlob sentiment analysis (existing approach)
-        blob = TextBlob(cleaned_text)
-        textblob_score = blob.sentiment.polarity  # -1 to 1 scale
+        textblob_score = 0
+        try:
+            blob = TextBlob(cleaned_text)
+            textblob_score = blob.sentiment.polarity  # -1 to 1 scale
+        except Exception as e:
+            print(f"TextBlob sentiment analysis error: {e}")
         
-        # Combine all sentiment scores (weighted average)
+        # Combine all sentiment scores based on what's available
+        available_models = 0
+        
         if cls._vectorizer is not None and cls._ml_model is not None:
-            # If ML model is available, use all three
-            sentiment_score = (0.4 * ml_sentiment_weight) + (0.3 * vader_score) + (0.3 * textblob_score)
-        else:
-            # If ML model is not available, use VADER and TextBlob
-            sentiment_score = (0.5 * vader_score) + (0.5 * textblob_score)
+            sentiment_score += 0.4 * ml_sentiment_weight
+            available_models += 0.4
+            
+        if cls._sid is not None:
+            sentiment_score += 0.3 * vader_score
+            available_models += 0.3
+            
+        sentiment_score += 0.3 * textblob_score
+        available_models += 0.3
+        
+        # Normalize the score if we have partial models available
+        if available_models > 0:
+            sentiment_score = sentiment_score / available_models
         
         # Calculate sentiment breakdown
         if sentiment_score > 0.3:
